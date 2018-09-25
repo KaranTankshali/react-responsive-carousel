@@ -1,4 +1,4 @@
-import React, { Component, Children } from 'react';
+import React, {Component, Children} from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import klass from '../cssClasses';
@@ -7,7 +7,8 @@ import Swipe from 'react-easy-swipe';
 import Thumbs from './Thumbs';
 import * as customPropTypes from '../customPropTypes';
 
-const noop = () => {};
+const noop = () => {
+};
 
 const defaultStatusFormatter = (current, total) => `${current} of ${total}`;
 
@@ -47,8 +48,8 @@ class Carousel extends Component {
     static defaultProps = {
         showIndicators: true,
         showArrows: true,
-        showStatus:true,
-        showThumbs:true,
+        showStatus: true,
+        showThumbs: true,
         infiniteLoop: false,
         selectedItem: 0,
         axis: 'horizontal',
@@ -83,7 +84,7 @@ class Carousel extends Component {
         };
     }
 
-    componentDidMount () {
+    componentDidMount() {
         if (!this.props.children) {
             return;
         }
@@ -91,7 +92,7 @@ class Carousel extends Component {
         this.setupCarousel();
     }
 
-    componentWillReceiveProps (nextProps) {
+    componentWillReceiveProps(nextProps) {
         if (nextProps.selectedItem !== this.state.selectedItem) {
             this.updateSizes();
             this.moveTo(nextProps.selectedItem);
@@ -147,7 +148,7 @@ class Carousel extends Component {
         this.itemsRef[index] = node;
     }
 
-    setupCarousel () {
+    setupCarousel() {
         this.bindEvents();
 
         if (this.state.autoPlay && Children.count(this.props.children) > 1) {
@@ -167,14 +168,14 @@ class Carousel extends Component {
         }
     }
 
-    destroyCarousel () {
+    destroyCarousel() {
         if (this.state.initialized) {
             this.unbindEvents();
             this.destroyAutoPlay();
         }
     }
 
-    setupAutoPlay () {
+    setupAutoPlay() {
         this.autoPlay();
         const carouselWrapper = this.carouselWrapperRef;
 
@@ -184,7 +185,7 @@ class Carousel extends Component {
         }
     }
 
-    destroyAutoPlay () {
+    destroyAutoPlay() {
         this.clearAutoPlay();
         const carouselWrapper = this.carouselWrapperRef;
 
@@ -194,7 +195,7 @@ class Carousel extends Component {
         }
     }
 
-    bindEvents () {
+    bindEvents() {
         // as the widths are calculated, we need to resize
         // the carousel when the window is resized
         window.addEventListener("resize", this.updateSizes);
@@ -206,13 +207,13 @@ class Carousel extends Component {
         }
     }
 
-    unbindEvents () {
+    unbindEvents() {
         // removing listeners
         window.removeEventListener("resize", this.updateSizes);
         window.removeEventListener("DOMContentLoaded", this.updateSizes);
 
         const initialImage = this.getInitialImage();
-        if(initialImage) {
+        if (initialImage) {
             initialImage.removeEventListener("load", this.setMountState);
         }
 
@@ -228,7 +229,7 @@ class Carousel extends Component {
 
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
-            this.increment();
+            this.increment(null, true);
         }, this.props.interval);
     }
 
@@ -256,7 +257,7 @@ class Carousel extends Component {
     }
 
     navigateWithKeyboard = (e) => {
-        const { axis } = this.props;
+        const {axis} = this.props;
         const isHorizontal = axis === 'horizontal';
         const keyNames = {
             ArrowUp: 38,
@@ -321,12 +322,12 @@ class Carousel extends Component {
         }
     }
 
-    handleOnChange = (index, item) => {
+    handleOnChange = (index, item, isAutoSlide) => {
         if (Children.count(this.props.children) <= 1) {
             return;
         }
 
-        this.props.onChange(index, item);
+        this.props.onChange(index, item, isAutoSlide);
     }
 
     handleClickThumb = (index, item) => {
@@ -334,7 +335,6 @@ class Carousel extends Component {
 
         this.selectItem({
             selectedItem: index,
-            origin: 'thumbnail',
         });
     }
 
@@ -391,7 +391,7 @@ class Carousel extends Component {
 
     getPosition(index) {
         if (this.props.centerMode && this.props.axis === 'horizontal') {
-            let currentPosition = - index * this.props.centerSlidePercentage;
+            let currentPosition = -index * this.props.centerSlidePercentage;
             const lastPosition = Children.count(this.props.children) - 1;
 
             if (index && index !== lastPosition) {
@@ -403,7 +403,7 @@ class Carousel extends Component {
             return currentPosition;
         }
 
-        return - index * 100;
+        return -index * 100;
     }
 
     setPosition = (position) => {
@@ -425,29 +425,29 @@ class Carousel extends Component {
         this.setPosition(currentPosition);
     }
 
-    decrement = (positions) => {
-        this.moveTo(this.state.selectedItem - (typeof positions === 'Number' ? positions : 1));
+    decrement = (positions, isAuto) => {
+        this.moveTo(this.state.selectedItem - (typeof positions === 'Number' ? positions : 1), isAuto);
     }
 
-    increment = (positions) => {
-        this.moveTo(this.state.selectedItem + (typeof positions === 'Number' ? positions : 1));
+    increment = (positions, isAuto) => {
+        this.moveTo(this.state.selectedItem + (typeof positions === 'Number' ? positions : 1), isAuto);
     }
 
-    moveTo = (position) => {
+    moveTo = (position, isAuto) => {
         const lastPosition = Children.count(this.props.children) - 1;
 
-        if (position < 0 ) {
-          position = this.props.infiniteLoop ?  lastPosition : 0;
+        if (position < 0) {
+            position = this.props.infiniteLoop ? lastPosition : 0;
         }
 
         if (position > lastPosition) {
-          position = this.props.infiniteLoop ? 0 : lastPosition;
+            position = this.props.infiniteLoop ? 0 : lastPosition;
         }
 
         this.selectItem({
             // if it's not a slider, we don't need to set position here
             selectedItem: position,
-            origin: 'autoSlide',
+            isAutoSlide: isAuto === true,
         });
 
         // don't reset auto play when stop on hover is enabled, doing so will trigger a call to auto play more than once
@@ -462,13 +462,12 @@ class Carousel extends Component {
 
         this.selectItem({
             selectedItem: newIndex,
-            origin: 'manual',
         });
     }
 
-    selectItem = (state) => {
+    selectItem = (state, isAutoSlide) => {
         this.setState(state);
-        this.handleOnChange(state.selectedItem, Children.toArray(this.props.children)[state.selectedItem]);
+        this.handleOnChange(state.selectedItem, Children.toArray(this.props.children)[state.selectedItem], isAutoSlide);
     }
 
     getInitialImage = () => {
@@ -501,7 +500,7 @@ class Carousel extends Component {
         return null;
     }
 
-    renderItems () {
+    renderItems() {
         return Children.map(this.props.children, (item, index) => {
             const itemClass = klass.ITEM(true, index === this.state.selectedItem);
             const slideProps = {
@@ -519,13 +518,13 @@ class Carousel extends Component {
 
             return (
                 <li {...slideProps}>
-                    { item }
+                    {item}
                 </li>
             );
         });
     }
 
-    renderControls () {
+    renderControls() {
         if (!this.props.showIndicators) {
             return null
         }
@@ -533,33 +532,36 @@ class Carousel extends Component {
         return (
             <ul className="control-dots">
                 {Children.map(this.props.children, (item, index) => {
-                    return <li className={klass.DOT(index === this.state.selectedItem)} onClick={this.changeItem} value={index} key={index} />;
+                    return <li className={klass.DOT(index === this.state.selectedItem)} onClick={this.changeItem}
+                               value={index} key={index}/>;
                 })}
             </ul>
         );
     }
 
-    renderStatus () {
+    renderStatus() {
         if (!this.props.showStatus) {
             return null
         }
 
-        return <p className="carousel-status">{this.props.statusFormatter(this.state.selectedItem + 1, Children.count(this.props.children))}</p>;
+        return <p
+            className="carousel-status">{this.props.statusFormatter(this.state.selectedItem + 1, Children.count(this.props.children))}</p>;
     }
 
-    renderThumbs () {
+    renderThumbs() {
         if (!this.props.showThumbs || Children.count(this.props.children) === 0) {
             return null
         }
 
         return (
-            <Thumbs ref={this.setThumbsRef} onSelectItem={this.handleClickThumb} selectedItem={this.state.selectedItem} transitionTime={this.props.transitionTime} thumbWidth={this.props.thumbWidth}>
+            <Thumbs ref={this.setThumbsRef} onSelectItem={this.handleClickThumb} selectedItem={this.state.selectedItem}
+                    transitionTime={this.props.transitionTime} thumbWidth={this.props.thumbWidth}>
                 {this.props.children}
             </Thumbs>
         );
     }
 
-    render () {
+    render() {
         if (!this.props.children || Children.count(this.props.children) === 0) {
             return null;
         }
@@ -585,23 +587,23 @@ class Carousel extends Component {
         const transitionTime = this.props.transitionTime + 'ms';
 
         itemListStyles = {
-                    'WebkitTransform': transformProp,
-                       'MozTransform': transformProp,
-                        'MsTransform': transformProp,
-                         'OTransform': transformProp,
-                          'transform': transformProp,
-                        'msTransform': transformProp
+            'WebkitTransform': transformProp,
+            'MozTransform': transformProp,
+            'MsTransform': transformProp,
+            'OTransform': transformProp,
+            'transform': transformProp,
+            'msTransform': transformProp
         };
 
         if (!this.state.swiping) {
             itemListStyles = {
                 ...itemListStyles,
-               'WebkitTransitionDuration': transitionTime,
-                  'MozTransitionDuration': transitionTime,
-                   'MsTransitionDuration': transitionTime,
-                    'OTransitionDuration': transitionTime,
-                     'transitionDuration': transitionTime,
-                   'msTransitionDuration': transitionTime
+                'WebkitTransitionDuration': transitionTime,
+                'MozTransitionDuration': transitionTime,
+                'MsTransitionDuration': transitionTime,
+                'OTransitionDuration': transitionTime,
+                'transitionDuration': transitionTime,
+                'msTransitionDuration': transitionTime
             }
         }
 
@@ -636,29 +638,30 @@ class Carousel extends Component {
         return (
             <div className={this.props.className} ref={this.setCarouselWrapperRef}>
                 <div className={klass.CAROUSEL(true)} style={{width: this.props.width}}>
-                    <button type="button" className={klass.ARROW_PREV(!hasPrev)} onClick={this.decrement} />
-                    <div className={klass.WRAPPER(true, this.props.axis)} style={containerStyles} ref={this.setItemsWrapperRef}>
-                        { this.props.swipeable ?
+                    <button type="button" className={klass.ARROW_PREV(!hasPrev)} onClick={this.decrement}/>
+                    <div className={klass.WRAPPER(true, this.props.axis)} style={containerStyles}
+                         ref={this.setItemsWrapperRef}>
+                        {this.props.swipeable ?
                             <Swipe
                                 tagName="ul"
                                 ref={this.setListRef}
                                 {...swiperProps}
                                 allowMouseEvents={this.props.emulateTouch}>
-                              { this.renderItems() }
+                                {this.renderItems()}
                             </Swipe> :
                             <ul
                                 className={klass.SLIDER(true, this.state.swiping)}
                                 style={itemListStyles}>
-                                { this.renderItems() }
+                                {this.renderItems()}
                             </ul>
                         }
                     </div>
-                    <button type="button" className={klass.ARROW_NEXT(!hasNext)} onClick={this.increment} />
+                    <button type="button" className={klass.ARROW_NEXT(!hasNext)} onClick={this.increment}/>
 
-                    { this.renderControls() }
-                    { this.renderStatus() }
+                    {this.renderControls()}
+                    {this.renderStatus()}
                 </div>
-                { this.renderThumbs() }
+                {this.renderThumbs()}
             </div>
         );
 
