@@ -93,6 +93,11 @@ class Carousel extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        if (nextProps.selectedItem !== this.state.selectedItem) {
+            this.updateSizes();
+            this.moveTo(nextProps.selectedItem);
+        }
+
         if (nextProps.autoPlay !== this.state.autoPlay) {
             this.setState({
                 autoPlay: nextProps.autoPlay
@@ -103,11 +108,6 @@ class Carousel extends Component {
                     this.destroyAutoPlay();
                 }
             });
-        }
-
-        if (nextProps.selectedItem !== this.state.selectedItem) {
-            this.updateSizes();
-            this.moveTo(nextProps.selectedItem);
         }
     }
 
@@ -349,7 +349,7 @@ class Carousel extends Component {
         this.setState({
             swiping: false
         });
-        this.autoPlay();
+        !this.props.stopOnScroll && this.autoPlay();
     }
 
     onSwipeMove = (delta) => {
@@ -452,7 +452,7 @@ class Carousel extends Component {
 
         // don't reset auto play when stop on hover is enabled, doing so will trigger a call to auto play more than once
         // and will result in the interval function not being cleared correctly.
-        if (this.state.autoPlay && this.state.isMouseEntered === false) {
+        if (this.state.autoPlay && this.state.isMouseEntered === false && isAuto === true) {
             this.resetAutoPlay();
         }
     }
