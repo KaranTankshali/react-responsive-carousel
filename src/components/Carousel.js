@@ -333,7 +333,8 @@ class Carousel extends Component {
         this.props.onClickThumb(index, item);
 
         this.selectItem({
-            selectedItem: index
+            selectedItem: index,
+            origin: 'thumbnail',
         });
     }
 
@@ -445,7 +446,8 @@ class Carousel extends Component {
 
         this.selectItem({
             // if it's not a slider, we don't need to set position here
-            selectedItem: position
+            selectedItem: position,
+            origin: 'autoSlide',
         });
 
         // don't reset auto play when stop on hover is enabled, doing so will trigger a call to auto play more than once
@@ -459,7 +461,8 @@ class Carousel extends Component {
         const newIndex = e.target.value;
 
         this.selectItem({
-            selectedItem: newIndex
+            selectedItem: newIndex,
+            origin: 'manual',
         });
     }
 
