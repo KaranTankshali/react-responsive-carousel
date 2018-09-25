@@ -465,9 +465,9 @@ class Carousel extends Component {
         });
     }
 
-    selectItem = (state, isAutoSlide) => {
+    selectItem = (state) => {
         this.setState(state);
-        this.handleOnChange(state.selectedItem, Children.toArray(this.props.children)[state.selectedItem], isAutoSlide);
+        this.handleOnChange(state.selectedItem, Children.toArray(this.props.children)[state.selectedItem], state.isAutoSlide);
     }
 
     getInitialImage = () => {
